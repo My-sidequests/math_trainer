@@ -1,0 +1,24 @@
+[project]
+name = "math-trainer"
+version = "0.1.0"
+description = "Apprendre les maths par la pratique, des équations jusqu'aux maths de l'IA"
+readme = "README.md"
+authors = [{ name = "Jude" }]
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "sympy>=1.12",
+]
+
+[project.scripts]
+math-trainer = "math_trainer.main:main"
+
+[build-system]
+requires = ["uv_build>=0.8,<0.12"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
