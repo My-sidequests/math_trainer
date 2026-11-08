@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import re
 import textwrap
 
 import matplotlib.pyplot as plt
@@ -41,6 +42,11 @@ def mark_success(fig):
              color=GREEN, alpha=0.85, rotation=12)
     fig.canvas.draw_idle()
     plt.pause(0.1)
+
+
+def typo(text: str) -> str:
+    """Remplace le tiret « - » devant un nombre par le vrai signe moins « − »."""
+    return re.sub(r"(?<![\w)])-(?=[\d(])", "−", text)
 
 
 def ask(prompt: str) -> str:
@@ -100,6 +106,9 @@ def run_exercise(ex: Exercise, title: str) -> bool:
         low = r.lower()
         if low == "m":
             print(f"{C_BOLD}Méthode :{C_END}\n{ex.method}")
+            if ex.solution:
+                print(f"\n{C_BOLD}Démonstration sur cet exercice :{C_END}\n{typo(ex.solution)}")
+                print(f"{C_BOLD}Réponse : {ex.answer.display()}{C_END}")
             continue
         if low in ("q", "quit"):
             plt.close("all")

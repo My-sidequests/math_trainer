@@ -25,6 +25,7 @@ class Exercise:
     answer: Answer          # réponse attendue
     method: str             # comment résoudre, SANS la solution
     draw: Draw | None = None  # représentation géométrique
+    solution: str = ""      # démonstration complète sur les nombres de l'exercice (la ligne « Réponse » est ajoutée automatiquement)
 
 
 # ---------------------------------------------------------------- formatage
@@ -414,3 +415,26 @@ def transform_square(M) -> Draw:
         ax.legend(loc="lower left")
 
     return draw
+
+
+# ---------------------------------------------------------------- démonstrations
+
+def steps_lin(a, b, c, var: str = "x") -> list[str]:
+    """Étapes de résolution de a·var + b = c (a ≠ 0), en valeurs exactes."""
+    a, b, c = Fraction(a), Fraction(b), Fraction(c)
+    out = []
+    rhs = c
+    if b != 0:
+        rhs = c - b
+        out.append(f"On {'soustrait' if b > 0 else 'ajoute'} {fmt(abs(b))} des deux côtés : {term(a, var)} = {fmt(rhs)}")
+    if a != 1:
+        out.append(f"On divise les deux côtés par {par(a)} : {var} = {fmt(rhs)} / {par(a)} = {fmt(rhs / a)}")
+    return out
+
+
+def lines(*parts) -> str:
+    """Assemble des lignes (ou listes de lignes) de démonstration en un texte numéroté."""
+    flat = []
+    for p in parts:
+        flat.extend(p if isinstance(p, list) else [p])
+    return "\n".join(f"{i}. {t}" for i, t in enumerate(flat, 1))

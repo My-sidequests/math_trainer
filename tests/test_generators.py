@@ -46,6 +46,8 @@ def test_all_generators():
                     assert ex.answer.check(good), where
                     assert not ex.answer.check(bad), where + " (mauvaise réponse acceptée)"
                     assert ex.method
+                    assert ex.solution or "Démonstration" in ex.method, where + " (pas de démonstration)"
+                    assert ex.answer.display()
                     if ex.draw and seed < 3:
                         fig, ax = plt.subplots()
                         ex.draw(ax)

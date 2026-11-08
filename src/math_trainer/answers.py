@@ -67,10 +67,35 @@ def _split(text: str) -> list[str]:
     return [p for p in (s.strip() for s in text.replace(";", ",").split(",")) if p]
 
 
+def show_num(v: float) -> str:
+    """Affichage lisible d'une valeur numérique : fraction simple si possible, sinon décimal arrondi."""
+    if math.isinf(v):
+        return "+∞" if v > 0 else "−∞"
+    if abs(v - round(v)) < 1e-9:
+        return str(int(round(v))).replace("-", "−")
+    if abs(v * 1000 - round(v * 1000)) < 1e-6:  # décimal court : 0.4, 5.5, 2.125
+        return f"{v:.3f}".rstrip("0").rstrip(".").replace("-", "−")
+    from fractions import Fraction
+    fr = Fraction(v).limit_denominator(100)
+    if abs(float(fr) - v) < 1e-9:
+        return f"{fr.numerator}/{fr.denominator}".replace("-", "−")
+    # multiples simples de √k ou de π : 0.866… → √3/2, 2.094… → 2π/3
+    for unit, name in [(math.sqrt(2), "√2"), (math.sqrt(3), "√3"), (math.sqrt(6), "√6"), (math.pi, "π")]:
+        c = Fraction(v / unit).limit_denominator(12)
+        if c != 0 and abs(float(c) * unit - v) < 1e-9:
+            n, d = c.numerator, c.denominator
+            top = name if n == 1 else ("−" + name if n == -1 else f"{n}{name}".replace("-", "−"))
+            return top if d == 1 else f"{top}/{d}"
+    return f"{v:.4f}".rstrip("0").rstrip(".").replace("-", "−")
+
+
 class Answer:
     expected: str = "une réponse"
 
     def check(self, text: str) -> bool:
+        raise NotImplementedError
+
+    def display(self) -> str:
         raise NotImplementedError
 
 
@@ -85,6 +110,9 @@ class Number(Answer):
 
     def check(self, text: str) -> bool:
         return _close(_to_float(parse(text)), self.value, self.tol)
+
+    def display(self) -> str:
+        return show_num(self.value)
 
 
 class Numbers(Answer):
@@ -114,6 +142,11 @@ class Numbers(Answer):
                 return False
             remaining.remove(match)
         return True
+
+    def display(self) -> str:
+        if not self.values:
+            return "aucune solution"
+        return ", ".join(show_num(v) for v in self.values)
 
 
 class Expr(Answer):
@@ -153,6 +186,9 @@ class Expr(Answer):
                 break
         return tested > 0
 
+    def display(self) -> str:
+        return str(self.expr).replace("**", "^").replace("log(", "ln(").replace("exp(", "e^(")
+
 
 class Choice(Answer):
     """Un mot parmi une liste (insensible à la casse et aux accents simples)."""
@@ -164,6 +200,9 @@ class Choice(Answer):
 
     def check(self, text: str) -> bool:
         return _norm(text) == self.correct
+
+    def display(self) -> str:
+        return next((o for o in self.options if _norm(o) == self.correct), self.correct)
 
 
 def _norm(s: str) -> str:

@@ -4,21 +4,49 @@ Apprendre les maths **par la pratique**, des équations du premier degré jusqu'
 Chaque exercice s'affiche dans une fenêtre matplotlib avec sa représentation géométrique (courbes, triangle,
 cercle trigonométrique, vecteurs…) ; on répond dans le terminal.
 
-## Lancer
+## Prérequis
+
+- **[uv](https://docs.astral.sh/uv/)** (gestionnaire de projets Python). Installation :
+  ```bash
+  # macOS / Linux
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  # ou, sur macOS avec Homebrew
+  brew install uv
+  ```
+- **Python ≥ 3.10**. Rien à installer à la main : uv télécharge automatiquement la version indiquée dans
+  `.python-version` si elle est absente.
+- **git**, pour récupérer le projet.
+- Un **environnement graphique** pour les fenêtres matplotlib. Le Python fourni par uv inclut Tkinter. Si tu
+  utilises un Python système sous Linux et que la fenêtre ne s'ouvre pas, installe Tk
+  (`sudo apt install python3-tk` sur Debian/Ubuntu).
+
+Les dépendances (matplotlib, numpy, sympy) sont installées automatiquement par uv.
+
+## Installation
 
 ```bash
-uv run math-trainer
+git clone https://github.com/My-sidequests/math_trainer.git
+cd math_trainer
+uv sync
 ```
 
-(`uv sync` installe l'environnement au premier lancement si besoin.)
+## Utilisation
+
+```bash
+uv run math-trainer      # lancer l'entraîneur
+uv run pytest            # lancer les tests (vérifie les 600 modèles d'exercices)
+```
+
+Pour quitter à tout moment : `q` dans les menus, ou `Ctrl+C`.
 
 ## Déroulement
 
 1. Choisis une **matière**.
 2. Choisis un **niveau** de 1 à 5.
 3. Un exercice tiré au hasard parmi les 10 modèles du niveau s'affiche (les valeurs changent à chaque fois).
-4. Tape ta réponse. Tentatives illimitées ; aucune solution n'est jamais donnée.
-   - `m` : affiche la **méthode** (comment résoudre, sans le résultat)
+4. Tape ta réponse. Tentatives illimitées.
+   - `m` : affiche la **méthode**, puis une **démonstration complète sur les nombres de l'exercice** (étapes
+     de calcul, vérification et réponse). Les valeurs étant tirées au hasard, l'exercice suivant reste à faire.
    - `q` : abandonne l'exercice
 5. Si la réponse est juste : **SUCCESS**, puis `[a]` autre exercice du même niveau, `[m]` menu principal, `[q]` quitter.
 
@@ -84,10 +112,12 @@ tests/test_generators.py
 
 1. Crée `subjects/<matiere>.py` avec `DESCRIPTIONS = {1: "...", ..., 5: "..."}` et
    `LEVELS = {1: [gen, ...], ..., 5: [...]}` (10 générateurs par niveau).
-2. Un générateur prend un `random.Random` et renvoie un `Exercise(statement, answer, method, draw)`.
+2. Un générateur prend un `random.Random` et renvoie un `Exercise(statement, answer, method, draw, solution)`.
+   `solution` est la démonstration pas à pas (les helpers `lines()` et `steps_lin()` de `core.py` aident à
+   la rédiger) ; la ligne « Réponse : … » est ajoutée automatiquement à partir de `answer`.
 3. Branche le module dans `subjects/__init__.py`.
 4. Lance `uv run pytest` : le test vérifie, pour chaque générateur et plusieurs tirages, que la bonne réponse
-   est acceptée, qu'une mauvaise est refusée et que la figure se dessine.
+   est acceptée, qu'une mauvaise est refusée, que la figure se dessine et que la démonstration existe.
 
 ## Notes
 
